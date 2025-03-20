@@ -1,1 +1,24 @@
-/* You can add global styles to this file, and also import other style files */
+/* Aplica MuseoModerno solo al logo */
+.logo-text {
+  font-family: 'MuseoModerno', sans-serif !important;
+  font-weight: 700;
+}
+
+/* Aplica Quicksand a "Feel Driven" */
+.hero-title {
+  font-family: 'DM Sans', sans-serif !important;
+  font-weight: 300;
+}
+
+.hero-subtitle {
+  font-family: 'DM Sans', sans-serif !important;
+  font-weight: 300;
+}
+
+
+/* Asegurar que la página no tenga scroll y ocupe toda la pantalla */
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* Evita el desplazamiento vertical */
+}

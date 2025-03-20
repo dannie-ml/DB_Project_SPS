@@ -1,0 +1,165 @@
+.hero {
+  background: #fbf6f1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Alinear a la izquierda */
+  justify-content: center;
+  text-align: left;
+  padding: 60px;
+  position: relative;
+}
+
+.navbar {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.logo {
+  height: 50px;
+}
+
+.menu-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.hero-content {
+  margin-left: 10%; /* Ajuste para alineación izquierda */
+  margin-top: -80px;
+  max-width: 600px;
+}
+
+.hero-content h1 {
+  font-size: 120px;
+  font-weight: bold;
+  color: black;
+}
+
+.hero-content p {
+  font-size: 18px;
+  color: #333;
+  max-width: 600px;
+  margin: 10px auto;
+}
+
+.cta-btn {
+  background-color: #393a39;
+  color: white;
+  padding: 15px 20px;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  border-radius: 5px;
+  margin-top: 20px;
+  transition: 0.3s;
+  position: absolute;
+  bottom: 180px;
+  right: 70px;
+}
+
+.cta-btn:hover {
+  background-color: #818181;
+}
+
+/* Aplicar MuseoModerno SOLO en el logo "breve" */
+.logo-text {
+  font-family: 'MuseoModerno', sans-serif;
+  font-weight: 700; /* Ajusta según el diseño */
+  font-size: 24px; /* Ajusta según el diseño */
+}
+
+/* Aplicar la segunda fuente en "Feel Driven" */
+.hero-title {
+  font-family: 'OtraFuenteEjemplo', sans-serif;
+  font-weight: 900;
+  line-height: 0.9;
+  font-size: 64px; /* Ajusta según el diseño */
+  opacity: 0;
+  transform: scale(0.8);
+  animation: fadeInScale 3s ease-out forwards;
+}
+
+/* Aplicar la segunda fuente al subencabezado */
+.hero-subtitle {
+  position: relative;
+  top: -50px;
+  color: #666; /* Ajusta si necesitas otro color */
+  opacity: 0;
+  transform: scale(0.8);
+  animation: fadeInScale 3s ease-out forwards;
+  animation-delay: 0.1s; /* Retraso de 0.5 segundos después del título */
+}
+
+.animated-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0; /* Mantenerlo en el fondo */
+  pointer-events: none; /* Permitir clics en los elementos sobre los círculos */
+}
+
+/* Estilos base para los círculos */
+.circle {
+  position: absolute;
+  aspect-ratio: 1 / 1;
+  width: 40vw; /* Tamaño relativo a la pantalla */
+  border-radius: 100%;
+  border: 1px solid rgba(11, 9, 3, 0.08);
+  background-color: transparent; /* No color de fondo */
+  animation: moveCircle 15s infinite alternate ease-in-out;
+}
+
+/* Círculos concéntricos con diferentes tamaños */
+.circle-1 {
+  width: 50vw;
+  animation-duration: 35s;
+}
+
+.circle-2 {
+  width: 35vw;
+  animation-duration: 12s;
+}
+
+.circle-3 {
+  width: 50vw;
+  animation-duration: 16s;
+}
+
+.circle-4 {
+  width: 80vw;
+  animation-duration: 20s;
+}
+
+/* Animación para movimiento dinámico */
+@keyframes moveCircle {
+  0% {
+    transform: translateX(-50px) translateY(-50px) scale(1);
+  }
+  50% {
+    transform: translateX(50px) translateY(50px) scale(1.1);
+  }
+  100% {
+    transform: translateX(-50px) translateY(-50px) scale(1);
+  }
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
