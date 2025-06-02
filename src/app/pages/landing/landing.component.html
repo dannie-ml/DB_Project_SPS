@@ -2,15 +2,16 @@
   <header class="navbar">
     <img src="SPS_logo.png" alt="Logo" class="logo">
     <span class="logo-text">SPS DB</span>
-    <button class="menu-btn">☰</button>
   </header>
 
   <section class="hero-content">
     <h1 class="hero-title">Database Administration</h1>
     <p class="hero-subtitle">We provide consulting services in relational Oracle databases, and
       we centralize our administration through automation processes.
-      We help you to achieve results and accelerate your workflow.</p>
-    <button class="cta-btn">Ingresar</button>
+      <br>
+      <br>
+      We help you to achieve results, organize and accelerate your workflow.</p>
+    <button class="cta-btn" (click)="openLoginSidebar()">Ingresar</button>
   </section>
 
   <div class="animated-background">
@@ -20,4 +21,14 @@
     <div class="circle circle-4"></div>
     <div class="circle circle-5"></div>
   </div>
+  
+    <!-- Login Sidebar Component -->
+  <app-login-sidebar
+    [isOpen]="isLoginSidebarOpen"
+    (close)="closeLoginSidebar()"
+    (loginSuccess)="onLoginSuccess($event)">
+  </app-login-sidebar>
+
+
+
 </div>
