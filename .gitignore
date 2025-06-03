@@ -40,3 +40,5 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+db_admin.Portal/node_modules/
+db_admin.API/__pycache__/
