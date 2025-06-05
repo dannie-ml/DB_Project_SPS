@@ -1,1 +1,119 @@
-<p>login works!</p>
+<!-- src/app/pages/login/login.component.html -->
+<div class="sidebar-backdrop"
+     [class.open]="isOpen"
+     (click)="onBackdropClick($event)">
+  <div class="login-sidebar" [class.open]="isOpen">
+    <div class="sidebar-header">
+      <h2>Ingresar</h2>
+      <button class="close-btn" (click)="onClose()" type="button">
+        <span>&times;</span>
+      </button>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <!-- Error message display -->
+      <div class="error-message general-error" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Success message display -->
+      <div class="success-message" *ngIf="successMessage">
+        {{ successMessage }}
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="Enter your email"
+          [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+        <div class="error-message"
+             *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+          <span *ngIf="loginForm.get('email')?.errors?.['required']">Email is required</span>
+          <span *ngIf="loginForm.get('email')?.errors?.['email']">Please enter a valid email</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          placeholder="Enter your password"
+          [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+        <div class="error-message"
+             *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+          <span *ngIf="loginForm.get('password')?.errors?.['required']">Password is required</span>
+          <span *ngIf="loginForm.get('password')?.errors?.['minlength']">Password must be at least 6 characters</span>
+        </div>
+      </div>
+
+      <div class="form-options">
+        <label class="checkbox-container">
+          <input type="checkbox" formControlName="rememberMe">
+          <span class="checkmark"></span>
+          Remember me
+        </label>
+        <a href="#" class="forgot-password" (click)="onForgotPassword($event)">Forgot Password?</a>
+      </div>
+
+      <button
+        type="submit"
+        class="login-btn"
+        [disabled]="loginForm.invalid || isLoading"
+        [class.loading]="isLoading">
+        <span *ngIf="!isLoading">Sign In</span>
+        <span *ngIf="isLoading">Signing In...</span>
+      </button>
+
+      <div class="divider">
+        <span>or</span>
+      </div>
+
+      <button type="button" class="google-btn" (click)="onGoogleLogin()">
+        <span>Continue with Google</span>
+      </button>
+
+      <p class="signup-link">
+        Don't have an account? <a href="#" (click)="onSignupClick($event)">Sign up</a>
+      </p>
+    </form>
+
+    <!-- Forgot Password Form -->
+    <form *ngIf="showForgotPassword" [formGroup]="forgotPasswordForm"
+          (ngSubmit)="onForgotPasswordSubmit()" class="login-form">
+      <div class="form-header">
+        <h3>Reset Password</h3>
+        <button type="button" class="back-btn" (click)="showForgotPassword = false">
+          ← Back to Login
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label for="reset-email">Email</label>
+        <input
+          id="reset-email"
+          type="email"
+          formControlName="email"
+          placeholder="Enter your email"
+          [class.error]="forgotPasswordForm.get('email')?.invalid && forgotPasswordForm.get('email')?.touched">
+        <div class="error-message"
+             *ngIf="forgotPasswordForm.get('email')?.invalid && forgotPasswordForm.get('email')?.touched">
+          <span *ngIf="forgotPasswordForm.get('email')?.errors?.['required']">Email is required</span>
+          <span *ngIf="forgotPasswordForm.get('email')?.errors?.['email']">Please enter a valid email</span>
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        class="login-btn"
+        [disabled]="forgotPasswordForm.invalid || isLoading">
+        <span *ngIf="!isLoading">Send Reset Link</span>
+        <span *ngIf="isLoading">Sending...</span>
+      </button>
+    </form>
+  </div>
+</div>

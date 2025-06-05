@@ -1,8 +1,8 @@
+// src/app/pages/landing/landing.component.ts
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LoginSidebarComponent } from '../../pages/login/login.component';
-
 
 @Component({
   selector: 'app-landing',
@@ -12,6 +12,8 @@ import { LoginSidebarComponent } from '../../pages/login/login.component';
 })
 export class LandingComponent {
   isLoginSidebarOpen = false;
+
+  constructor(private router: Router) {}
 
   openLoginSidebar() {
     this.isLoginSidebarOpen = true;
@@ -27,10 +29,17 @@ export class LandingComponent {
 
   onLoginSuccess(loginData: any) {
     console.log('Login successful:', loginData);
-    // Handle successful login here
-    // For example, store user data, redirect, etc.
 
-    // Show success message
-    alert('Login successful! Welcome back.');
+    // Close the sidebar
+    this.closeLoginSidebar();
+
+    // Navigate to dashboard after successful login
+    this.router.navigate(['/dashboard']);
+
+    // Optional: Show success message
+    // You could use a toast service here instead of alert
+    setTimeout(() => {
+      alert(`Welcome back, ${loginData.user.full_name}!`);
+    }, 500);
   }
 }

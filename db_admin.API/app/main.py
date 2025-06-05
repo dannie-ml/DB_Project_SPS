@@ -4,21 +4,21 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 import uvicorn
 
-from database import get_db, engine, Base
-from models import User, PasswordResetToken, LoginSession
-from schemas import (
+from app.database import get_db, engine, Base
+from app.models.models import User, PasswordResetToken, LoginSession
+from app.schemas.schemas import (
     UserCreate, UserLogin, UserResponse, PasswordReset,
     PasswordResetRequest, Token, LoginResponse
 )
-from auth import (
+from app.auth.auth import (
     create_access_token, verify_token, get_password_hash,
     verify_password, get_current_user
 )
-from email_service import send_password_reset_email
+from app.email_service.email_service import send_password_reset_email
 
 
 # Creación de tablas
@@ -61,7 +61,7 @@ async def register_user(user: UserCreate, db: Session = Depends(get_db)):
         full_name = user.full_name,
         hashed_password = hashed_password,
         is_active = True,
-        created_at = datetime.now(datetime.timezone.utc)
+        created_at = datetime.now(timezone.utc)
     )
 
     db.add(db_user)
@@ -80,7 +80,7 @@ async def register_user(user: UserCreate, db: Session = Depends(get_db)):
 async def login_user(user_credentials: UserLogin, db: Session = Depends(get_db)):
     """ Autenticación de usuario y token de acceso """
     # Encuentra usuario por email
-    user = db.query(User).filter(User.email == user_credentials).email.first()
+    user = db.query(User).filter(User.email == user_credentials.email).first()
 
     if not user or not verify_password(user_credentials.password, user.hashed_password):
         raise HTTPException(
@@ -101,13 +101,13 @@ async def login_user(user_credentials: UserLogin, db: Session = Depends(get_db))
     login_session = LoginSession(
         user_id = user.id,
         token = access_token,
-        expires_at = datetime.now(datetime.timezone.utc) + timedelta(days = 7),
-        created_at = datetime.now(datetime.timezone.utc)
+        expires_at = datetime.now(timezone.utc) + timedelta(days = 7),
+        created_at = datetime.now(timezone.utc)
     )
     db.add(login_session)
 
     # Actualiza el ultimo login del user
-    user.last_login = datetime.now(datetime.timezone.utc)
+    user.last_login = datetime.now(timezone.utc)
     db.commit()
 
     return LoginResponse(
@@ -167,8 +167,8 @@ async def forgot_passord(
     db_token = PasswordResetToken(
         user_id = user.id,
         token = reset_token,
-        expires_at = datetime.now(datetime.timezone.utc) + timedelta(hours = 1),
-        created_at = datetime.now(datetime.timezone.utc)
+        expires_at = datetime.now(timezone.utc) + timedelta(hours = 1),
+        created_at = datetime.now(timezone.utc)
     )
 
     db.add(db_token)
@@ -192,7 +192,7 @@ async def reset_password(reset_data: PasswordReset, db: Session = Depends(get_db
     token_record = db.query(PasswordResetToken).filter(
         PasswordResetToken.token == reset_data.token,
         PasswordResetToken.used == False,
-        PasswordResetToken.expires_at > datetime.now(datetime.timezone.utc)
+        PasswordResetToken.expires_at > datetime.now(timezone.utc)
     ).first()
 
     if not token_record:
@@ -214,7 +214,7 @@ async def reset_password(reset_data: PasswordReset, db: Session = Depends(get_db
 
     # Marcar token como usado
     token_record.used = True
-    token_record.used_at = datetime.now(datetime.timezone.utc)
+    token_record.used_at = datetime.now(timezone.utc)
 
     # Inválida todas las sesiones del usuario
     db.query(LoginSession).filter(LoginSession.user_id == user.id).update({"is_active": False})
@@ -229,7 +229,7 @@ async def verify_reset_token(token: str, db: Session = Depends(get_db)):
     token_record = db.query(PasswordResetToken).filter(
         PasswordResetToken.token == token,
         PasswordResetToken.used == False,
-        PasswordResetToken.expires_at > datetime.now(datetime.timezone.utc)
+        PasswordResetToken.expires_at > datetime.now(timezone.utc)
     ).first()
 
     if not token_record:
@@ -243,7 +243,7 @@ async def verify_reset_token(token: str, db: Session = Depends(get_db)):
 @app.get("/api/health")
 async def health_check():
     """ Health check endpoint """
-    return {"status": "healthy", "timestamp": datetime.now(datetime.timezone.utc)}
+    return {"status": "healthy", "timestamp": datetime.now(timezone.utc)}
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host = "0.0.0.0", port = 8000, reload = True)

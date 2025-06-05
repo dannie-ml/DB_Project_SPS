@@ -4,19 +4,22 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from decouple import config
-import cx_Oracle
+import oracledb
 
 # Configuración de la base de datos Oracle
 
-ORACLE_USER = config('ORACLE_USER', default ='_username_')
-ORACLE_PASSWORD = config('ORACLE_PASSWORD', default = '_password_')
-ORACLE_HOST = config('ORACLE_HOST', default = 'localhost')
+ORACLE_USER = config('ORACLE_USER', default ='APPUSER')
+ORACLE_PASSWORD = config('ORACLE_PASSWORD', default = 'ORACLE')
+ORACLE_HOST = config('ORACLE_HOST', default = '0.0.0.0')
 ORACLE_PORT = config('ORACLE_PORT', default = '1521')
 ORACLE_SERVICE = config('ORACLE_SERVICE', default = 'FREEPDB1')
 
 # Cadena de conexión Oracle
 
-DATABASE_URL = f"oracle+cx_oracle://{ORACLE_USER}:{ORACLE_PASSWORD}@{ORACLE_HOST}:{ORACLE_PORT}/{ORACLE_SERVICE}"
+DATABASE_URL = (
+    f'oracle+oracledb://{ORACLE_USER}:{ORACLE_PASSWORD}'
+    f'@localhost:1521/?service_name=FREEPDB1'
+)
 
 # Crea el engine
 

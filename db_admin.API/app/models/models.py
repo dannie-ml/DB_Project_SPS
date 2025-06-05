@@ -2,8 +2,8 @@
 
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey
 from sqlalchemy.orm import relationship
-from database import Base
-from datetime import datetime
+from app.database import Base
+from datetime import datetime, timezone
 import secrets
 
 # Definiciones
@@ -16,7 +16,7 @@ class User(Base):
     full_name = Column(String(255), nullable = False)
     hashed_password = Column(String(255), nullable = False)
     is_active = Column(Boolean, default = True)
-    created_at = Column(DateTime, default = datetime.now(datetime.timezone.utc))
+    created_at = Column(DateTime, default = datetime.now(timezone.utc))
     last_login = Column(DateTime, nullable = True)
 
     # Relaciones
@@ -30,7 +30,7 @@ class LoginSession(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable = False)
     token = Column(Text, nullable = False, index = True)
     is_active = Column(Boolean, default = True)
-    created_at = Column(DateTime, default = datetime.now(datetime.timezone.utc))
+    created_at = Column(DateTime, default = datetime.now(timezone.utc))
     expires_at = Column(DateTime, nullable = False)
 
     # Relaciones
@@ -44,7 +44,7 @@ class PasswordResetToken(Base):
     token = Column(String(255), nullable = False, index = True)
     used = Column(Boolean, default = False)
     expires_at = Column(DateTime, nullable = False)
-    created_at = Column(DateTime, default = datetime.now(datetime.timezone.utc))
+    created_at = Column(DateTime, default = datetime.now(timezone.utc))
     used_at = Column(DateTime, nullable = True)
 
     # Relaciones

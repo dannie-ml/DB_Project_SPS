@@ -1,6 +1,6 @@
 # Librerias
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -9,8 +9,8 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from decouple import config
 
-from database import get_db
-from models import User, LoginSession
+from app.database import get_db
+from app.models.models import User, LoginSession
 
 # Configuración de seguridad
 
@@ -33,9 +33,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """ Crea un token de acceso JWT """
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.now(datetime.timezone.utc) + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(datetime.timezone.utc) + timedelta(days = ACCESS_TOKEN_EXPIRE_DAYS)
+        expire = datetime.now(timezone.utc) + timedelta(days = ACCESS_TOKEN_EXPIRE_DAYS)
 
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm = ALGORITHM)
@@ -73,7 +73,7 @@ async def get_current_user(
     session = db.query(LoginSession).filter(
         LoginSession.token == token,
         LoginSession.is_active == True,
-        LoginSession.expires_at > datetime.now(datetime.timezone.utc)
+        LoginSession.expires_at > datetime.now(timezone.utc)
     ).first()
 
     if not session:

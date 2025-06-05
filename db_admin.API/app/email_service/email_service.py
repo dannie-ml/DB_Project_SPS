@@ -16,7 +16,7 @@ FROM_EMAIL = config('FROM_EMAIL', default='noreply@spsdb.com')
 
 logger = logging.getLogger(__name__)
 
-async def send_password_reset_mail(email: str, full_name: str, reset_token: str):
+async def send_password_reset_email(email: str, full_name: str, reset_token: str):
     """ Envio de mail para reseteo de constraseña """
     try:
         # Crea mensaje
