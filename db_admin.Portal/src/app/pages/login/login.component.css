@@ -1,5 +1,3 @@
-/* src/app/components/login-sidebar/login-sidebar.component.css */
-
 .sidebar-backdrop {
   position: fixed;
   top: 0;
@@ -79,6 +77,32 @@
   flex-direction: column;
 }
 
+.form-header {
+  margin-bottom: 20px;
+}
+
+.form-header h3 {
+  margin: 0 0 10px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #393a39;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.back-btn:hover {
+  color: #666;
+}
+
 .form-group {
   margin-bottom: 24px;
 }
@@ -118,6 +142,25 @@
   margin-top: 6px;
 }
 
+.general-error {
+  background-color: #fdf2f2;
+  border: 1px solid #e74c3c;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.success-message {
+  background-color: #f0f9f4;
+  border: 1px solid #22c55e;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #166534;
+}
+
 .form-options {
   display: flex;
   justify-content: space-between;
@@ -135,6 +178,8 @@
 
 .checkbox-container input {
   margin-right: 8px;
+  width: auto;
+  padding: 0;
 }
 
 .forgot-password {
@@ -236,6 +281,27 @@
   text-decoration: underline;
 }
 
+/* Loading spinner animation */
+.login-btn.loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin: auto;
+  border: 2px solid transparent;
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
 /* Responsive design */
 @media (max-width: 480px) {
   .login-sidebar {
@@ -252,6 +318,3 @@
     font-size: 24px;
   }
 }
-
-/* Update landing component HTML */
-/* src/app/pages/landing/landing.component.html - Replace the button and add sidebar */
