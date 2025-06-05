@@ -23,7 +23,7 @@ class User(Base):
     login_sessions = relationship("LoginSession", back_populates = "user")
     password_reset_tokens = relationship("PasswordResetToken", back_populates = "user")
 
-class LogingSession(Base):
+class LoginSession(Base):
     __tablename__ = "login_sessions"
 
     id = Column(Integer, primary_key = True, index = True)
