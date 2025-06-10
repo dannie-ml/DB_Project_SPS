@@ -28,31 +28,35 @@ import { Subject, takeUntil } from 'rxjs';
         <nav class="sidebar-nav">
           <a href="#" class="nav-item active" (click)="setActiveSection('home', $event)">
             <span class="nav-icon">🏠</span>
-            <span class="nav-text">Dashboard</span>
+            <span class="nav-text">Dashboard de Monitoreo (HC)</span>
           </a>
           <a href="#" class="nav-item" (click)="setActiveSection('about', $event)">
             <span class="nav-icon">👤</span>
-            <span class="nav-text">About</span>
+            <span class="nav-text">Gestión de tickets y/o registros</span>
           </a>
           <a href="#" class="nav-item" (click)="setActiveSection('services', $event)">
             <span class="nav-icon">💼</span>
-            <span class="nav-text">Services</span>
+            <span class="nav-text">Gestión de usuarios</span>
           </a>
           <a href="#" class="nav-item" (click)="setActiveSection('projects', $event)">
             <span class="nav-icon">💻</span>
-            <span class="nav-text">Projects</span>
+            <span class="nav-text">Accesos a las bases de datos</span>
           </a>
           <a href="#" class="nav-item" (click)="setActiveSection('shop', $event)">
             <span class="nav-icon">🛒</span>
-            <span class="nav-text">Shop</span>
+            <span class="nav-text">Inventarios de bases de datos</span>
           </a>
           <a href="#" class="nav-item" (click)="setActiveSection('blog', $event)">
             <span class="nav-icon">📝</span>
-            <span class="nav-text">Blog</span>
+            <span class="nav-text">Documentación / Guías de bases de datos</span>
           </a>
           <a href="#" class="nav-item" (click)="setActiveSection('contact', $event)">
             <span class="nav-icon">✉️</span>
-            <span class="nav-text">Contact</span>
+            <span class="nav-text">Reportes / Análisis</span>
+          </a>
+          <a href="#" class="nav-item" (click)="setActiveSection('auditorias', $event)">
+            <span class="nav-icon">✉️</span>
+            <span class="nav-text">Generación de archivos de auditorías</span>
           </a>
         </nav>
 
@@ -737,13 +741,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
     getSectionDisplayName(section: string): string {
     const sectionNames: { [key: string]: string } = {
-      home: 'Dashboard',
-      about: 'About',
-      services: 'Services',
-      projects: 'Projects',
-      shop: 'Shop',
-      blog: 'Blog',
-      contact: 'Contact'
+      home: 'Dashboard de Monitoreo (HC)',
+      about: 'Gestión de tickets y/o registros',
+      services: 'Gestión de usuarios',
+      projects: 'Accesos a las bases de datos',
+      shop: 'Inventarios de bases de datos',
+      blog: 'Documentación / Guías de bases de datos',
+      contact: 'Reportes / Análisis',
+      auditorias: 'Generación de archivos de auditorías',
     };
     return sectionNames[section] || 'Home';
   }
