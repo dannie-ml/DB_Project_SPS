@@ -20,6 +20,8 @@ from app.auth.auth import (
 )
 from app.email_service.email_service import send_password_reset_email
 
+from app.routers.monitoring import router as monitoring_router
+
 
 # Creación de tablas
 
@@ -40,6 +42,10 @@ app.add_middleware(
     allow_methods = ['*'],
     allow_headers = ['*'],
 )
+
+# Include monitoring router
+
+app.include_router(monitoring_router)
 
 security = HTTPBearer()
 

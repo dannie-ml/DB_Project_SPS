@@ -3,12 +3,14 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService, User } from '../../services/auth.service';
-import { Subject, takeUntil } from 'rxjs';
+import { MonitoringService, DatabaseMetrics, TableData } from '../../services/monitoring.service';
+import { DataTableComponent, PaginationEvent } from '../../components/data-table/data-table.component';
+import { Subject, takeUntil, interval } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DataTableComponent],
   template: `
     <div class="dashboard-container">
       <!-- Left Sidebar -->
@@ -26,41 +28,41 @@ import { Subject, takeUntil } from 'rxjs';
 
         <!-- Navigation Menu -->
         <nav class="sidebar-nav">
-          <a href="#" class="nav-item active" (click)="setActiveSection('home', $event)">
+          <a href="#" class="nav-item" [class.active]="activeSection === 'home'" (click)="setActiveSection('home', $event)">
             <span class="nav-icon">🏠</span>
             <span class="nav-text">Dashboard de Monitoreo (HC)</span>
           </a>
-          <a href="#" class="nav-item" (click)="setActiveSection('about', $event)">
+          <a href="#" class="nav-item" [class.active]="activeSection === 'about'" (click)="setActiveSection('about', $event)">
             <span class="nav-icon">👤</span>
             <span class="nav-text">Gestión de tickets y/o registros</span>
           </a>
-          <a href="#" class="nav-item" (click)="setActiveSection('services', $event)">
+          <a href="#" class="nav-item" [class.active]="activeSection === 'services'" (click)="setActiveSection('services', $event)">
             <span class="nav-icon">💼</span>
             <span class="nav-text">Gestión de usuarios</span>
           </a>
-          <a href="#" class="nav-item" (click)="setActiveSection('projects', $event)">
+          <a href="#" class="nav-item" [class.active]="activeSection === 'projects'" (click)="setActiveSection('projects', $event)">
             <span class="nav-icon">💻</span>
             <span class="nav-text">Accesos a las bases de datos</span>
           </a>
-          <a href="#" class="nav-item" (click)="setActiveSection('shop', $event)">
+          <a href="#" class="nav-item" [class.active]="activeSection === 'shop'" (click)="setActiveSection('shop', $event)">
             <span class="nav-icon">🛒</span>
             <span class="nav-text">Inventarios de bases de datos</span>
           </a>
-          <a href="#" class="nav-item" (click)="setActiveSection('blog', $event)">
+          <a href="#" class="nav-item" [class.active]="activeSection === 'blog'" (click)="setActiveSection('blog', $event)">
             <span class="nav-icon">📝</span>
             <span class="nav-text">Documentación / Guías de bases de datos</span>
           </a>
-          <a href="#" class="nav-item" (click)="setActiveSection('contact', $event)">
+          <a href="#" class="nav-item" [class.active]="activeSection === 'contact'" (click)="setActiveSection('contact', $event)">
             <span class="nav-icon">✉️</span>
             <span class="nav-text">Reportes / Análisis</span>
           </a>
-          <a href="#" class="nav-item" (click)="setActiveSection('auditorias', $event)">
-            <span class="nav-icon">✉️</span>
+          <a href="#" class="nav-item" [class.active]="activeSection === 'auditorias'" (click)="setActiveSection('auditorias', $event)">
+            <span class="nav-icon">🔍</span>
             <span class="nav-text">Generación de archivos de auditorías</span>
           </a>
         </nav>
 
-        <!-- Logout Button -->
+        <!-- Sidebar Footer -->
         <div class="sidebar-footer">
           <!-- Footer content removed since logout is now at top -->
         </div>
@@ -90,32 +92,32 @@ import { Subject, takeUntil } from 'rxjs';
               A continuación los siguientes servicios se encuentran operando con normalidad.
             </p>
             <div class="action-buttons">
-              <button class="btn btn-primary">Get Report</button>
-              <button class="btn btn-secondary">Analyze</button>
+              <button class="btn btn-primary" (click)="refreshAllData()">Get Report</button>
+              <button class="btn btn-secondary" (click)="refreshMetrics()">Analyze</button>
             </div>
           </div>
 
-          <!-- Stats Grid -->
+          <!-- Real-time Stats Grid -->
           <div class="stats-grid">
             <div class="stat-card">
               <div class="stat-icon">📊</div>
               <div class="stat-info">
                 <h3>Active Connections</h3>
-                <p class="stat-number">12</p>
+                <p class="stat-number">{{ dbMetrics?.active_connections || 0 }}</p>
               </div>
             </div>
             <div class="stat-card">
               <div class="stat-icon">💾</div>
               <div class="stat-info">
                 <h3>Database Size</h3>
-                <p class="stat-number">2.4 GB</p>
+                <p class="stat-number">{{ (dbMetrics?.database_size_gb || 0) | number:'1.1-1' }} GB</p>
               </div>
             </div>
             <div class="stat-card">
               <div class="stat-icon">🔄</div>
               <div class="stat-info">
-                <h3>Last Backup</h3>
-                <p class="stat-number">2h ago</p>
+                <h3>Uptime</h3>
+                <p class="stat-number">{{ (dbMetrics?.uptime_hours || 0) | number:'1.0-0' }}h</p>
               </div>
             </div>
             <div class="stat-card">
@@ -127,8 +129,91 @@ import { Subject, takeUntil } from 'rxjs';
             </div>
           </div>
 
-          <!-- Selected Projects Section -->
-          <div class="projects-section">
+          <!-- Monitoring Tables Section -->
+          <div class="monitoring-section" *ngIf="activeSection === 'home'">
+            <div class="section-header">
+              <h2>Real-time Database Monitoring</h2>
+              <div class="monitoring-controls">
+                <button class="toggle-btn"
+                        [class.active]="autoRefresh"
+                        (click)="toggleAutoRefresh()">
+                  <span>{{ autoRefresh ? '⏸️' : '▶️' }}</span>
+                  Auto Refresh
+                </button>
+                <span class="last-updated" *ngIf="dbMetrics?.last_updated">
+                  Last updated: {{ dbMetrics?.last_updated | date:'medium' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+              <button
+                *ngFor="let tab of monitoringTabs"
+                class="tab-btn"
+                [class.active]="activeMonitoringTab === tab.key"
+                (click)="setActiveMonitoringTab(tab.key)">
+                {{ tab.label }}
+              </button>
+            </div>
+
+            <!-- Database Sessions Table -->
+            <div *ngIf="activeMonitoringTab === 'sessions'">
+              <app-data-table
+                title="Database Sessions"
+                [headers]="sessionsData.headers"
+                [rows]="sessionsData.rows"
+                [loading]="loadingStates.sessions"
+                [error]="errorStates.sessions"
+                [totalCount]="sessionsData.total_count"
+                [currentPage]="sessionsData.page"
+                [pageSize]="sessionsData.page_size"
+                [sortable]="true"
+                [columnTypes]="['number', 'number', 'text', 'text', 'text', 'text', 'date', 'number']"
+                (refresh)="refreshSessions()"
+                (pageChange)="onSessionsPageChange($event)">
+              </app-data-table>
+            </div>
+
+            <!-- Tablespace Usage Table -->
+            <div *ngIf="activeMonitoringTab === 'tablespaces'">
+              <app-data-table
+                title="Tablespace Usage"
+                [headers]="tablespacesData.headers"
+                [rows]="tablespacesData.rows"
+                [loading]="loadingStates.tablespaces"
+                [error]="errorStates.tablespaces"
+                [totalCount]="tablespacesData.total_count"
+                [currentPage]="tablespacesData.page"
+                [pageSize]="tablespacesData.page_size"
+                [sortable]="true"
+                [columnTypes]="['text', 'number', 'number', 'number', 'percentage']"
+                (refresh)="refreshTablespaces()"
+                (pageChange)="onTablespacesPageChange($event)">
+              </app-data-table>
+            </div>
+
+            <!-- Top SQL Statements Table -->
+            <div *ngIf="activeMonitoringTab === 'sql'">
+              <app-data-table
+                title="Top SQL Statements"
+                [headers]="sqlData.headers"
+                [rows]="sqlData.rows"
+                [loading]="loadingStates.sql"
+                [error]="errorStates.sql"
+                [totalCount]="sqlData.total_count"
+                [currentPage]="sqlData.page"
+                [pageSize]="sqlData.page_size"
+                [sortable]="true"
+                [columnTypes]="['text', 'text', 'number', 'number', 'number', 'number', 'number', 'text']"
+                (refresh)="refreshTopSql()"
+                (pageChange)="onSqlPageChange($event)">
+              </app-data-table>
+            </div>
+          </div>
+
+          <!-- Selected Projects Section (only show when not in monitoring) -->
+          <div class="projects-section" *ngIf="activeSection !== 'home'">
             <div class="section-header">
               <h2>Quick Actions</h2>
               <button class="view-all-btn">All Actions</button>
@@ -168,7 +253,7 @@ import { Subject, takeUntil } from 'rxjs';
           </div>
 
           <!-- Recent Activity -->
-          <div class="recent-activity">
+          <div class="recent-activity" *ngIf="activeSection !== 'home'">
             <h2>Recent Activity</h2>
             <div class="activity-list">
               <div class="activity-item">
@@ -485,10 +570,11 @@ import { Subject, takeUntil } from 'rxjs';
       font-weight: bold;
       color: #111827;
       margin: 0;
+      font-family: 'JetBrains Mono', monospace;
     }
 
-    /* Projects Section */
-    .projects-section {
+    /* Monitoring Section */
+    .monitoring-section {
       margin-bottom: 4rem;
     }
 
@@ -506,6 +592,73 @@ import { Subject, takeUntil } from 'rxjs';
       font-family: 'DM Sans', sans-serif;
     }
 
+    .monitoring-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      background: white;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.875rem;
+    }
+
+    .toggle-btn:hover {
+      border-color: #d1d5db;
+      background: #f9fafb;
+    }
+
+    .toggle-btn.active {
+      background: #22c55e;
+      border-color: #22c55e;
+      color: white;
+    }
+
+    .last-updated {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      font-style: italic;
+    }
+
+    .tab-navigation {
+      display: flex;
+      border-bottom: 1px solid #e5e7eb;
+      margin-bottom: 2rem;
+      gap: 0.5rem;
+    }
+
+    .tab-btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      background: transparent;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-bottom: 2px solid transparent;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+    }
+
+    .tab-btn:hover {
+      color: #111827;
+      background: #f9fafb;
+    }
+
+    .tab-btn.active {
+      color: #111827;
+      border-bottom-color: #3b82f6;
+      background: #f9fafb;
+    }
+
     .view-all-btn {
       background: transparent;
       border: 1px solid #e5e7eb;
@@ -521,6 +674,11 @@ import { Subject, takeUntil } from 'rxjs';
       border-color: #d1d5db;
       color: #111827;
       background: #f9fafb;
+    }
+
+    /* Projects Section */
+    .projects-section {
+      margin-bottom: 4rem;
     }
 
     .projects-grid {
@@ -698,16 +856,64 @@ import { Subject, takeUntil } from 'rxjs';
         align-items: flex-start;
         gap: 1rem;
       }
+
+      .monitoring-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .tab-navigation {
+        flex-wrap: wrap;
+      }
     }
   `]
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
   activeSection: string = 'home';
+  activeMonitoringTab: string = 'sessions';
+
+  // Database metrics
+  dbMetrics: DatabaseMetrics | null = null;
+
+  // Table data
+  sessionsData: TableData = this.getEmptyTableData();
+  tablespacesData: TableData = this.getEmptyTableData();
+  sqlData: TableData = this.getEmptyTableData();
+
+  // Loading states
+  loadingStates = {
+    sessions: false,
+    tablespaces: false,
+    sql: false,
+    metrics: false
+  };
+
+  // Error states
+  errorStates = {
+    sessions: '',
+    tablespaces: '',
+    sql: '',
+    metrics: ''
+  };
+
+  // Auto refresh
+  autoRefresh = false;
+  refreshInterval = 30000; // 30 seconds
+
+  // Monitoring tabs
+  monitoringTabs = [
+    { key: 'sessions', label: 'Database Sessions' },
+    { key: 'tablespaces', label: 'Tablespace Usage' },
+    { key: 'sql', label: 'Top SQL Statements' }
+  ];
+
   private destroy$ = new Subject<void>();
 
   constructor(
     private authService: AuthService,
+    private monitoringService: MonitoringService,
     private router: Router
   ) {}
 
@@ -718,8 +924,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .subscribe(user => {
         this.currentUser = user;
         if (!user) {
-          // If no user, redirect to home
           this.router.navigate(['/']);
+        } else {
+          // Load initial data when user is authenticated
+          this.loadInitialData();
+        }
+      });
+
+    // Setup auto refresh
+    interval(this.refreshInterval)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.autoRefresh && this.currentUser) {
+          this.refreshCurrentTab();
         }
       });
   }
@@ -727,6 +944,160 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private getEmptyTableData(): TableData {
+    return {
+      headers: [],
+      rows: [],
+      total_count: 0,
+      page: 1,
+      page_size: 20
+    };
+  }
+
+  private loadInitialData(): void {
+    this.refreshMetrics();
+    this.refreshSessions();
+  }
+
+  private refreshCurrentTab(): void {
+    switch (this.activeMonitoringTab) {
+      case 'sessions':
+        this.refreshSessions();
+        break;
+      case 'tablespaces':
+        this.refreshTablespaces();
+        break;
+      case 'sql':
+        this.refreshTopSql();
+        break;
+    }
+    this.refreshMetrics();
+  }
+
+  // Data refresh methods
+  refreshMetrics(): void {
+    this.loadingStates.metrics = true;
+    this.errorStates.metrics = '';
+
+    this.monitoringService.getDatabaseMetrics()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (metrics) => {
+          this.dbMetrics = metrics;
+          this.loadingStates.metrics = false;
+        },
+        error: (error) => {
+          this.errorStates.metrics = 'Failed to load database metrics';
+          this.loadingStates.metrics = false;
+          console.error('Error loading metrics:', error);
+        }
+      });
+  }
+
+  refreshSessions(page: number = 1, pageSize: number = 20): void {
+    this.loadingStates.sessions = true;
+    this.errorStates.sessions = '';
+
+    this.monitoringService.getDatabaseSessions(page, pageSize)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.sessionsData = data;
+          this.loadingStates.sessions = false;
+        },
+        error: (error) => {
+          this.errorStates.sessions = 'Failed to load database sessions';
+          this.loadingStates.sessions = false;
+          console.error('Error loading sessions:', error);
+        }
+      });
+  }
+
+  refreshTablespaces(page: number = 1, pageSize: number = 20): void {
+    this.loadingStates.tablespaces = true;
+    this.errorStates.tablespaces = '';
+
+    this.monitoringService.getTablespaceUsage(page, pageSize)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.tablespacesData = data;
+          this.loadingStates.tablespaces = false;
+        },
+        error: (error) => {
+          this.errorStates.tablespaces = 'Failed to load tablespace usage';
+          this.loadingStates.tablespaces = false;
+          console.error('Error loading tablespaces:', error);
+        }
+      });
+  }
+
+  refreshTopSql(page: number = 1, pageSize: number = 20): void {
+    this.loadingStates.sql = true;
+    this.errorStates.sql = '';
+
+    this.monitoringService.getTopSqlStatements(10, page, pageSize)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.sqlData = data;
+          this.loadingStates.sql = false;
+        },
+        error: (error) => {
+          this.errorStates.sql = 'Failed to load SQL statements';
+          this.loadingStates.sql = false;
+          console.error('Error loading SQL statements:', error);
+        }
+      });
+  }
+
+  refreshAllData(): void {
+    this.refreshMetrics();
+    this.refreshSessions();
+    this.refreshTablespaces();
+    this.refreshTopSql();
+  }
+
+  // Event handlers
+  toggleAutoRefresh(): void {
+    this.autoRefresh = !this.autoRefresh;
+  }
+
+  setActiveMonitoringTab(tab: string): void {
+    this.activeMonitoringTab = tab;
+
+    // Load data for the selected tab if not already loaded
+    switch (tab) {
+      case 'sessions':
+        if (this.sessionsData.headers.length === 0) {
+          this.refreshSessions();
+        }
+        break;
+      case 'tablespaces':
+        if (this.tablespacesData.headers.length === 0) {
+          this.refreshTablespaces();
+        }
+        break;
+      case 'sql':
+        if (this.sqlData.headers.length === 0) {
+          this.refreshTopSql();
+        }
+        break;
+    }
+  }
+
+  onSessionsPageChange(event: PaginationEvent): void {
+    this.refreshSessions(event.page, event.pageSize);
+  }
+
+  onTablespacesPageChange(event: PaginationEvent): void {
+    this.refreshTablespaces(event.page, event.pageSize);
+  }
+
+  onSqlPageChange(event: PaginationEvent): void {
+    this.refreshTopSql(event.page, event.pageSize);
   }
 
   logout(): void {
@@ -737,9 +1108,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     event.preventDefault();
     this.activeSection = section;
     console.log(`Navigating to section: ${section}`);
-    // Here you can add logic to show different content based on the section
   }
-    getSectionDisplayName(section: string): string {
+
+  getSectionDisplayName(section: string): string {
     const sectionNames: { [key: string]: string } = {
       home: 'Dashboard de Monitoreo (HC)',
       about: 'Gestión de tickets y/o registros',
@@ -753,5 +1124,3 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return sectionNames[section] || 'Home';
   }
 }
-
-
