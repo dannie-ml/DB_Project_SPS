@@ -1,7 +1,8 @@
 import { Component, EventEmitter, Input, Output, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { AuthService, LoginRequest } from '../../services/auth.service';
+import { AuthService  } from '../../services/auth.service';
+import { LoginRequest } from '../../shared/interfaces/auth.interface';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({

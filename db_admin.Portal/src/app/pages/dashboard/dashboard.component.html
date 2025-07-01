@@ -1,1 +1,270 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+      <!-- Left Sidebar -->
+      <aside class="left-sidebar">
+        <!-- User Profile Section -->
+        <div class="user-profile">
+          <div class="user-info" *ngIf="currentUser">
+            <h3 class="user-name">{{ currentUser.full_name }}</h3>
+            <p class="user-title">Database Administrator</p>
+          </div>
+          <button class="logout-btn-top" (click)="logout()">
+            <span>Logout</span>
+          </button>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+          <a href="#" class="nav-item" [class.active]="activeSection === 'home'" (click)="setActiveSection('home', $event)">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Dashboard de Monitoreo (HC)</span>
+          </a>
+          <a href="#" class="nav-item" [class.active]="activeSection === 'about'" (click)="setActiveSection('about', $event)">
+            <span class="nav-icon">👤</span>
+            <span class="nav-text">Gestión de tickets y/o registros</span>
+          </a>
+          <a href="#" class="nav-item" [class.active]="activeSection === 'services'" (click)="setActiveSection('services', $event)">
+            <span class="nav-icon">💼</span>
+            <span class="nav-text">Gestión de usuarios</span>
+          </a>
+          <a href="#" class="nav-item" [class.active]="activeSection === 'projects'" (click)="setActiveSection('projects', $event)">
+            <span class="nav-icon">💻</span>
+            <span class="nav-text">Accesos a las bases de datos</span>
+          </a>
+          <a href="#" class="nav-item" [class.active]="activeSection === 'shop'" (click)="setActiveSection('shop', $event)">
+            <span class="nav-icon">🛒</span>
+            <span class="nav-text">Inventarios de bases de datos</span>
+          </a>
+          <a href="#" class="nav-item" [class.active]="activeSection === 'blog'" (click)="setActiveSection('blog', $event)">
+            <span class="nav-icon">📝</span>
+            <span class="nav-text">Documentación / Guías de bases de datos</span>
+          </a>
+          <a href="#" class="nav-item" [class.active]="activeSection === 'contact'" (click)="setActiveSection('contact', $event)">
+            <span class="nav-icon">✉️</span>
+            <span class="nav-text">Reportes / Análisis</span>
+          </a>
+          <a href="#" class="nav-item" [class.active]="activeSection === 'auditorias'" (click)="setActiveSection('auditorias', $event)">
+            <span class="nav-icon">🔍</span>
+            <span class="nav-text">Generación de archivos de auditorías</span>
+          </a>
+        </nav>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+          <!-- Footer content removed since logout is now at top -->
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="main-content">
+        <!-- Top Header with Logo -->
+        <header class="content-header">
+          <div class="header-center">
+            <h1 class="section-name">{{ getSectionDisplayName(activeSection) }}</h1>
+          </div>
+          <div class="header-right">
+            <div class="logo-section">
+              <img src="SPS_logo.png" alt="Logo" class="logo">
+              <span class="logo-text">SPS DB</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="content-wrapper">
+          <!-- Welcome Section -->
+          <div class="welcome-section">
+            <h2>Database Administration Dashboard.</h2>
+            <p class="welcome-description">
+              A continuación los siguientes servicios se encuentran operando con normalidad.
+            </p>
+            <div class="action-buttons">
+              <button class="btn btn-primary" (click)="refreshAllData()">Get Report</button>
+              <button class="btn btn-secondary" (click)="refreshMetrics()">Analyze</button>
+            </div>
+          </div>
+
+          <!-- Real-time Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">📊</div>
+              <div class="stat-info">
+                <h3>Active Connections</h3>
+                <p class="stat-number">{{ dbMetrics?.active_connections || 0 }}</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">💾</div>
+              <div class="stat-info">
+                <h3>Database Size</h3>
+                <p class="stat-number">{{ (dbMetrics?.database_size_gb || 0) | number:'1.1-1' }} GB</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">🔄</div>
+              <div class="stat-info">
+                <h3>Uptime</h3>
+                <p class="stat-number">{{ (dbMetrics?.uptime_hours || 0) | number:'1.0-0' }}h</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">⚠️</div>
+              <div class="stat-info">
+                <h3>Alerts</h3>
+                <p class="stat-number">0</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monitoring Tables Section -->
+          <div class="monitoring-section" *ngIf="activeSection === 'home'">
+            <div class="section-header">
+              <h2>Real-time Database Monitoring</h2>
+              <div class="monitoring-controls">
+                <button class="toggle-btn"
+                        [class.active]="autoRefresh"
+                        (click)="toggleAutoRefresh()">
+                  <span>{{ autoRefresh ? '⏸️' : '▶️' }}</span>
+                  Auto Refresh
+                </button>
+                <span class="last-updated" *ngIf="dbMetrics?.last_updated">
+                  Last updated: {{ dbMetrics?.last_updated | date:'medium' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+              <button
+                *ngFor="let tab of monitoringTabs"
+                class="tab-btn"
+                [class.active]="activeMonitoringTab === tab.key"
+                (click)="setActiveMonitoringTab(tab.key)">
+                {{ tab.label }}
+              </button>
+            </div>
+
+            <!-- Database Sessions Table -->
+            <div *ngIf="activeMonitoringTab === 'sessions'">
+              <app-data-table
+                title="Database Sessions"
+                [headers]="sessionsData.headers"
+                [rows]="sessionsData.rows"
+                [loading]="loadingStates.sessions"
+                [error]="errorStates.sessions"
+                [totalCount]="sessionsData.total_count"
+                [currentPage]="sessionsData.page"
+                [pageSize]="sessionsData.page_size"
+                [sortable]="true"
+                [columnTypes]="['number', 'number', 'text', 'text', 'text', 'text', 'date', 'number']"
+                (refresh)="refreshSessions()"
+                (pageChange)="onSessionsPageChange($event)">
+              </app-data-table>
+            </div>
+
+            <!-- Tablespace Usage Table -->
+            <div *ngIf="activeMonitoringTab === 'tablespaces'">
+              <app-data-table
+                title="Tablespace Usage"
+                [headers]="tablespacesData.headers"
+                [rows]="tablespacesData.rows"
+                [loading]="loadingStates.tablespaces"
+                [error]="errorStates.tablespaces"
+                [totalCount]="tablespacesData.total_count"
+                [currentPage]="tablespacesData.page"
+                [pageSize]="tablespacesData.page_size"
+                [sortable]="true"
+                [columnTypes]="['text', 'number', 'number', 'number', 'percentage']"
+                (refresh)="refreshTablespaces()"
+                (pageChange)="onTablespacesPageChange($event)">
+              </app-data-table>
+            </div>
+
+            <!-- Top SQL Statements Table -->
+            <div *ngIf="activeMonitoringTab === 'sql'">
+              <app-data-table
+                title="Top SQL Statements"
+                [headers]="sqlData.headers"
+                [rows]="sqlData.rows"
+                [loading]="loadingStates.sql"
+                [error]="errorStates.sql"
+                [totalCount]="sqlData.total_count"
+                [currentPage]="sqlData.page"
+                [pageSize]="sqlData.page_size"
+                [sortable]="true"
+                [columnTypes]="['text', 'text', 'number', 'number', 'number', 'number', 'number', 'text']"
+                (refresh)="refreshTopSql()"
+                (pageChange)="onSqlPageChange($event)">
+              </app-data-table>
+            </div>
+          </div>
+
+          <!-- Selected Projects Section (only show when not in monitoring) -->
+          <div class="projects-section" *ngIf="activeSection !== 'home'">
+            <div class="section-header">
+              <h2>Quick Actions</h2>
+              <button class="view-all-btn">All Actions</button>
+            </div>
+
+            <div class="projects-grid">
+              <div class="project-card">
+                <div class="project-image">
+                  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=250&fit=crop" alt="Database Analytics Project">
+                </div>
+                <div class="project-content">
+                  <h3>Database Analytics Dashboard</h3>
+                  <p>Real-time analytics and monitoring system for enterprise databases.</p>
+                </div>
+              </div>
+
+              <div class="project-card">
+                <div class="project-image">
+                  <img src="https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=400&h=250&fit=crop" alt="Data Migration Project">
+                </div>
+                <div class="project-content">
+                  <h3>Data Migration System</h3>
+                  <p>Automated data migration and synchronization between multiple databases.</p>
+                </div>
+              </div>
+
+              <div class="project-card">
+                <div class="project-image">
+                  <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=250&fit=crop" alt="Backup Management">
+                </div>
+                <div class="project-content">
+                  <h3>Backup Management Portal</h3>
+                  <p>Comprehensive backup scheduling and recovery management interface.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="recent-activity" *ngIf="activeSection !== 'home'">
+            <h2>Recent Activity</h2>
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-icon">✅</div>
+                <div class="activity-content">
+                  <span class="activity-desc">Database backup completed successfully</span>
+                  <span class="activity-time">10:30 AM</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon">👤</div>
+                <div class="activity-content">
+                  <span class="activity-desc">User login: {{ currentUser?.email }}</span>
+                  <span class="activity-time">09:15 AM</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon">🔍</div>
+                <div class="activity-content">
+                  <span class="activity-desc">System health check passed</span>
+                  <span class="activity-time">08:45 AM</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
