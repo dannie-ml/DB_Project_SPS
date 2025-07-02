@@ -81,6 +81,19 @@
         </p>
       </div>
 
+      <!-- Monitoring Tables Section -->
+      <div class="monitoring-section" *ngIf="activeSection === 'home'">
+        <div class="section-header">
+          <h2>Real-time Database Monitoring</h2>
+        </div>
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+          <button *ngFor="let tab of monitoringTabs" class="tab-btn" [class.active]="activeMonitoringTab === tab.key"
+            (click)="setActiveMonitoringTab(tab.key)">
+            {{ tab.label }}
+          </button>
+        </div>
+
       <!-- Filter Controls -->
       <div class="filter-controls" *ngIf="activeSection === 'home'">
         <div>
@@ -112,19 +125,6 @@
           ⬇️ Download Report
         </button>
       </div>
-
-      <!-- Monitoring Tables Section -->
-      <div class="monitoring-section" *ngIf="activeSection === 'home'">
-        <div class="section-header">
-          <h2>Real-time Database Monitoring</h2>
-        </div>
-        <!-- Tab Navigation -->
-        <div class="tab-navigation">
-          <button *ngFor="let tab of monitoringTabs" class="tab-btn" [class.active]="activeMonitoringTab === tab.key"
-            (click)="setActiveMonitoringTab(tab.key)">
-            {{ tab.label }}
-          </button>
-        </div>
 
         <!-- Dashboard Grid for Charts and Tables -->
         <div class="dashboard-grid" *ngIf="activeMonitoringTab === 'tablespaces'">

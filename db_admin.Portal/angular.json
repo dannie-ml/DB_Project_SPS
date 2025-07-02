@@ -30,7 +30,7 @@
               "src/styles.css"
             ],
             "scripts": [
-              "node_modules/chart.js/dist/chart.min.js"
+              "node_modules/chart.js/dist/chart.umd.js"
             ]
           },
           "configurations": {
