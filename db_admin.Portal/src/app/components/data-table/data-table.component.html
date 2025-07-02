@@ -1,1 +1,77 @@
-<p>data-table works!</p>
+<div class="data-table-container">
+  <!-- Table Header -->
+  <div class="table-header" *ngIf="title">
+    <h3 class="table-title">{{ title }}</h3>
+    <div class="table-actions">
+      <button class="refresh-btn" (click)="onRefresh()" [disabled]="loading">
+        <span class="refresh-icon">🔄</span>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <span>Loading data...</span>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-container" *ngIf="error && !loading">
+    <div class="error-icon">⚠️</div>
+    <span>{{ error }}</span>
+    <button class="retry-btn" (click)="onRefresh()">Retry</button>
+  </div>
+
+  <!-- Table Content -->
+  <div class="table-wrapper" *ngIf="!loading && !error">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th *ngFor="let header of headers; let i = index" [class.sortable]="sortable"
+            (click)="sortable ? onSort(i) : null">
+            {{ header }}
+            <span class="sort-icon" *ngIf="sortable && sortColumn === i">
+              {{ sortDirection === 'asc' ? '↑' : '↓' }}
+            </span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of displayedRows; let i = index" [class.even]="i % 2 === 0" [class.odd]="i % 2 === 1">
+          <td *ngFor="let cell of row; let j = index" [class]="getCellClass(j)">
+            {{ formatCell(cell, j) }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="rows.length === 0">
+      <div class="empty-icon">📊</div>
+      <h4>No data available</h4>
+      <p>There is no data to display at the moment.</p>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container" *ngIf="!loading && !error && totalCount > pageSize">
+    <div class="pagination-info">
+      Showing {{ startIndex + 1 }} to {{ endIndex }} of {{ totalCount }} entries
+    </div>
+    <div class="pagination-controls">
+      <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+        Previous
+      </button>
+
+      <button *ngFor="let page of visiblePages" class="page-btn" [class.active]="page === currentPage"
+        (click)="goToPage(page)">
+        {{ page }}
+      </button>
+
+      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+        Next
+      </button>
+    </div>
+  </div>
+</div>
