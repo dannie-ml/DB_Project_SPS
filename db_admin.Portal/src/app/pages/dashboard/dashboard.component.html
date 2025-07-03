@@ -5,7 +5,7 @@
     <div class="user-profile">
       <div class="user-info" *ngIf="currentUser">
         <h3 class="user-name">{{ currentUser.full_name }}</h3>
-        <p class="user-title">Database Administrator</p>
+        <p class="user-title">Lead AI Manager</p>
       </div>
       <button class="logout-btn-top" (click)="logout()">
         <span>Logout</span>
@@ -97,20 +97,22 @@
       <!-- Filter Controls -->
       <div class="filter-controls" *ngIf="activeSection === 'home'">
         <div>
-          <span class="filter-label">Timeframe:</span>
+          <span class="filter-label">Cliente:</span>
           <select class="filter-select">
-            <option value="all">All-time</option>
-            <option value="month">Last Month</option>
-            <option value="week">Last Week</option>
-            <option value="day">Last Day</option>
+            <option value="select">Select</option>
+            <option value="client1">Solistica</option>
+            <option value="client2">Proxylogis</option>
+            <option value="client3">Rytlog</option>
+            <option value="client4">Mecanicatek</option>
           </select>
         </div>
         <div>
-          <span class="filter-label">Database:</span>
+          <span class="filter-label">Ambiente:</span>
           <select class="filter-select">
-            <option value="all">All Databases</option>
-            <option value="prod">Production</option>
-            <option value="staging">Staging</option>
+            <option value="all">Select</option>
+            <option value="prod">Producción</option>
+            <option value="qa">QA</option>
+            <option value="dev">Desarrollo</option>
           </select>
         </div>
         <div>
