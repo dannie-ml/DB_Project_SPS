@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 import logging
 from datetime import datetime
+import pytz
+
 from app.database import get_db
 from app.auth.auth import get_current_user
 from app.models.models import User
@@ -94,6 +96,16 @@ async def get_database_sessions(
         logger.error(f"Error getting database sessions: {str(e)}")
         raise HTTPException(status_code=500, detail="Error retrieving sessions data")
 
+def to_cdmx_time(dt_utc: datetime) -> str:
+    """Convierte el datetime UTC a string con horario de CDMX"""
+    if dt_utc is None:
+        return ''
+    if dt_utc.tzinfo is None:
+        dt_utc = dt_utc.replace(tzinfo = pytz.UTC)
+    cdmx = pytz.timezone('America/Mexico_City')
+    dt_cdmx = dt_utc.astimezone(cdmx)
+    return dt_cdmx.strftime("%d/%m/%Y %H:%M:%S")
+
 @router.get("/tablespaces", response_model=TableData)
 async def get_tablespace_usage(
     page: int = Query(1, ge=1),
@@ -119,11 +131,7 @@ async def get_tablespace_usage(
 
         rows = []
         for ts in paginated_tablespaces:
-            raw_ts = ts["dt_registro"]
-            if isinstance(raw_ts, datetime):
-                ts_str = raw_ts.strftime("%d/%m/%Y %H:%M:%S")
-            else:
-                ts_str = str(raw_ts)
+            ts_str = to_cdmx_time(ts['dt_registro'])
             rows.append([
                 ts['tablespace_name'],
                 f"{ts['total_mb']:.2f}",
