@@ -271,3 +271,33 @@ data-table-container {
     padding: 0.5rem;
   }
 }
+
+/* Percentage Badge Styles - Semaphore Colors */
+.percentage-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid;
+  font-family: 'Inter', sans-serif;
+}
+
+.percentage-healthy {
+  background: #f0fdf4;
+  color: #16a34a;
+  border-color: #bbf7d0;
+}
+
+.percentage-warning {
+  background: #fefce8;
+  color: #ca8a04;
+  border-color: #fde047;
+}
+
+.percentage-critical {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
