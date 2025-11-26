@@ -16,9 +16,10 @@
 }
 
 
-/* Asegurar que la página no tenga scroll y ocupe toda la pantalla */
-html, body {
+/* Asegurar que la página ocupe toda la pantalla */
+html,
+body {
   height: 100%;
   margin: 0;
-  overflow: hidden; /* Evita el desplazamiento vertical */
+  /* Removed overflow: hidden to allow proper scrolling in dashboard */
 }
