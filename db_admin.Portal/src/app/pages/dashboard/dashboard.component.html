@@ -1,55 +1,73 @@
-<div class="dashboard-container">
+<div class="dashboard-container" [class.sidebar-collapsed]="sidebarCollapsed">
   <!-- Left Sidebar -->
   <aside class="left-sidebar">
-    <!-- User Profile Section -->
-    <div class="user-profile">
-      <div class="user-info" *ngIf="currentUser">
+    <!-- Sidebar Toggle -->
+    <button class="sidebar-toggle" (click)="toggleSidebar()" title="Toggle Sidebar">
+      <span class="material-icons">{{ sidebarCollapsed ? 'menu_open' : 'menu' }}</span>
+    </button>
+
+    <!-- User Profile Section - Compact -->
+    <div class="user-profile-compact" *ngIf="currentUser">
+      <div class="user-avatar" [title]="currentUser.full_name">
+        {{ getUserInitials() }}
+      </div>
+      <div class="user-details" *ngIf="!sidebarCollapsed">
         <h3 class="user-name">{{ currentUser.full_name }}</h3>
         <p class="user-title">Lead AI Manager</p>
       </div>
-      <button class="logout-btn-top" (click)="logout()">
-        <span>Logout</span>
+      <button class="logout-btn-icon" (click)="logout()" [title]="sidebarCollapsed ? 'Logout' : ''">
+        <span class="material-icons">power_settings_new</span>
       </button>
     </div>
 
     <!-- Navigation Menu -->
     <nav class="sidebar-nav">
-      <a href="#" class="nav-item" [class.active]="activeSection === 'home'" (click)="setActiveSection('home', $event)">
-        <span class="nav-icon">📊</span>
-        <span class="nav-text">Dashboard de Monitoreo (HC)</span>
+      <div class="nav-section-header" *ngIf="!sidebarCollapsed">MONITORING</div>
+      <a href="#" class="nav-item" [class.active]="activeSection === 'home'" (click)="setActiveSection('home', $event)"
+        title="Dashboard de Monitoreo">
+        <span class="material-icons">dashboard</span>
+        <span class="nav-text" *ngIf="!sidebarCollapsed">Dashboard de Monitoreo</span>
       </a>
+
+      <div class="nav-section-header" *ngIf="!sidebarCollapsed">MANAGEMENT</div>
       <a href="#" class="nav-item" [class.active]="activeSection === 'about'"
-        (click)="setActiveSection('about', $event)">
-        <span class="nav-icon">🎫</span>
-        <span class="nav-text">Gestión de tickets y/o registros</span>
+        (click)="setActiveSection('about', $event)" title="Gestión de tickets">
+        <span class="material-icons">confirmation_number</span>
+        <span class="nav-text" *ngIf="!sidebarCollapsed">Gestión de tickets</span>
       </a>
       <a href="#" class="nav-item" [class.active]="activeSection === 'services'"
-        (click)="setActiveSection('services', $event)">
-        <span class="nav-icon">👥</span>
-        <span class="nav-text">Gestión de usuarios</span>
+        (click)="setActiveSection('services', $event)" title="Gestión de usuarios">
+        <span class="material-icons">group</span>
+        <span class="nav-text" *ngIf="!sidebarCollapsed">Gestión de usuarios</span>
       </a>
       <a href="#" class="nav-item" [class.active]="activeSection === 'projects'"
-        (click)="setActiveSection('projects', $event)">
-        <span class="nav-icon">🗄️</span>
-        <span class="nav-text">Accesos a las bases de datos</span>
+        (click)="setActiveSection('projects', $event)" title="Accesos DB">
+        <span class="material-icons">storage</span>
+        <span class="nav-text" *ngIf="!sidebarCollapsed">Accesos DB</span>
       </a>
-      <a href="#" class="nav-item" [class.active]="activeSection === 'shop'" (click)="setActiveSection('shop', $event)">
-        <span class="nav-icon">📦</span>
-        <span class="nav-text">Inventarios de bases de datos</span>
+
+      <div class="nav-section-header" *ngIf="!sidebarCollapsed">DATA</div>
+      <a href="#" class="nav-item" [class.active]="activeSection === 'shop'" (click)="setActiveSection('shop', $event)"
+        title="Inventarios">
+        <span class="material-icons">inventory_2</span>
+        <span class="nav-text" *ngIf="!sidebarCollapsed">Inventarios</span>
       </a>
-      <a href="#" class="nav-item" [class.active]="activeSection === 'blog'" (click)="setActiveSection('blog', $event)">
-        <span class="nav-icon">📚</span>
-        <span class="nav-text">Documentación / Guías de bases de datos</span>
+      <a href="#" class="nav-item" [class.active]="activeSection === 'blog'" (click)="setActiveSection('blog', $event)"
+        title="Documentación">
+        <span class="material-icons">menu_book</span>
+        <span class="nav-text" *ngIf="!sidebarCollapsed">Documentación</span>
       </a>
+
+      <div class="nav-section-header" *ngIf="!sidebarCollapsed">ANALYTICS</div>
       <a href="#" class="nav-item" [class.active]="activeSection === 'contact'"
-        (click)="setActiveSection('contact', $event)">
-        <span class="nav-icon">📈</span>
-        <span class="nav-text">Reportes / Análisis</span>
+        (click)="setActiveSection('contact', $event)" title="Reportes">
+        <span class="material-icons">analytics</span>
+        <span class="nav-text" *ngIf="!sidebarCollapsed">Reportes</span>
       </a>
       <a href="#" class="nav-item" [class.active]="activeSection === 'auditorias'"
-        (click)="setActiveSection('auditorias', $event)">
-        <span class="nav-icon">🔍</span>
-        <span class="nav-text">Generación de archivos de auditorías</span>
+        (click)="setActiveSection('auditorias', $event)" title="Auditorías">
+        <span class="material-icons">search</span>
+        <span class="nav-text" *ngIf="!sidebarCollapsed">Auditorías</span>
       </a>
     </nav>
   </aside>
@@ -94,103 +112,165 @@
           </button>
         </div>
 
-      <!-- Filter Controls -->
-      <div class="filter-controls" *ngIf="activeSection === 'home'">
-        <div>
-          <span class="filter-label">Cliente:</span>
-          <select class="filter-select">
-            <option value="select">Select</option>
-            <option value="client1">Solistica</option>
-            <option value="client2">Proxylogis</option>
-            <option value="client3">Rytlog</option>
-            <option value="client4">Mecanicatek</option>
-          </select>
-        </div>
-        <div>
-          <span class="filter-label">Ambiente:</span>
-          <select class="filter-select">
-            <option value="all">Select</option>
-            <option value="prod">Producción</option>
-            <option value="qa">QA</option>
-            <option value="dev">Desarrollo</option>
-          </select>
-        </div>
-        <div>
-          <span class="filter-label">Topic:</span>
-          <select class="filter-select">
-            <option value="all">All Topics</option>
-            <option value="performance">Performance</option>
-            <option value="usage">Usage</option>
-          </select>
-        </div>
-        <button class="download-btn" (click)="refreshAllData()">
-          ⬇️ Download Report
-        </button>
-      </div>
+        <!-- Modern Filter Bar -->
+        <div class="filter-bar-modern" *ngIf="activeSection === 'home'">
+          <div class="filter-group">
+            <label class="floating-label">CLIENT</label>
+            <select class="filter-select-modern">
+              <option value="">Seleccionar</option>
+              <option value="client1">Solistica</option>
+              <option value="client2">Proxylogis</option>
+              <option value="client3">Rytlog</option>
+              <option value="client4">Mecanicatek</option>
+            </select>
+          </div>
 
-        <!-- Dashboard Grid for Charts and Tables -->
-        <div class="dashboard-grid" *ngIf="activeMonitoringTab === 'tablespaces'">
-          <!-- Tablespace Usage Chart -->
-          <div class="dashboard-card">
-            <div class="card-header">
-              <div>
-                <h3 class="card-title">Tablespace Usage</h3>
-                <p class="card-subtitle">Real-time storage utilization</p>
+          <div class="filter-group">
+            <label class="floating-label">ENVIRONMENT</label>
+            <select class="filter-select-modern">
+              <option value="">Seleccionar</option>
+              <option value="prod">🟢 Producción</option>
+              <option value="qa">🟡 QA</option>
+              <option value="dev">🔵 Desarrollo</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="floating-label">DATABASE</label>
+            <select class="filter-select-modern">
+              <option value="all">All Databases (3)</option>
+              <option disabled>──────────</option>
+              <option value="db1">Database 1</option>
+              <option value="db2">Database 2</option>
+              <option value="db3">Database 3</option>
+            </select>
+          </div>
+
+          <div class="filter-divider"></div>
+
+          <button class="refresh-btn-modern" (click)="refreshAllData()">
+            <span class="material-icons">refresh</span>
+            Refresh
+          </button>
+        </div>
+
+        <!-- Database Blocks - Scalable with *ngFor -->
+        <ng-container *ngIf="activeMonitoringTab === 'tablespaces'">
+          <div *ngFor="let db of databases; trackBy: trackByDatabaseId" class="database-block">
+
+            <!-- Block Header -->
+            <div class="block-header">
+              <div class="db-info">
+                <span class="status-dot" [class.status-healthy]="db.status === 'healthy'"
+                  [class.status-warning]="db.status === 'warning'"
+                  [class.status-critical]="db.status === 'critical'"></span>
+                <div>
+                  <h3 class="db-name">{{ db.name }}</h3>
+                  <span class="db-meta">{{ db.version }} • {{ db.region }}</span>
+                </div>
               </div>
-              <select class="time-filter">
-                <option>Last 30 days</option>
-                <option>Last 7 days</option>
-                <option>Last 24 hours</option>
-              </select>
+              <div class="block-actions">
+                <button class="action-btn-secondary">
+                  <span class="material-icons">description</span>
+                  View Logs
+                </button>
+                <button class="action-btn-icon">
+                  <span class="material-icons">more_horiz</span>
+                </button>
+              </div>
             </div>
-            <div class="chart-container">
-              <canvas id="tablespaceChart"></canvas>
+
+            <!-- Stats Cards Grid (Active Connections, Database Size, etc.) -->
+            <div class="stats-grid-block">
+              <div class="stat-card-block">
+                <div class="stat-info">
+                  <h3>Active Connections</h3>
+                  <p class="stat-number">{{ dbMetrics?.active_connections || 0 }}</p>
+                  <p class="stat-change">+5% from last hour</p>
+                </div>
+              </div>
+              <div class="stat-card-block">
+                <div class="stat-info">
+                  <h3>Database Size</h3>
+                  <p class="stat-number">{{ (dbMetrics?.database_size_gb || 0) | number:'1.1-1' }} GB</p>
+                  <p class="stat-change">+2.3% from last month</p>
+                </div>
+              </div>
+              <div class="stat-card-block">
+                <div class="stat-info">
+                  <h3>Uptime</h3>
+                  <p class="stat-number">{{ (dbMetrics?.uptime_hours || 0) | number:'1.0-0' }}h</p>
+                  <p class="stat-change">99.9% availability</p>
+                </div>
+              </div>
+              <div class="stat-card-block">
+                <div class="stat-info">
+                  <h3>Performance</h3>
+                  <p class="stat-number">98.5%</p>
+                  <p class="stat-change">Excellent</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Metrics Grid -->
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <span class="metric-label">CPU LOAD</span>
+                <span class="metric-value">{{ db.metrics.cpu }}%</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">MEMORY</span>
+                <span class="metric-value">{{ db.metrics.memory }} GB</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">CONNECTIONS</span>
+                <span class="metric-value">{{ db.metrics.connections }}</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">AVG LATENCY</span>
+                <span class="metric-value">{{ db.metrics.latency }}ms</span>
+              </div>
+            </div>
+
+            <!-- Content Area: Graph + Table -->
+            <div class="block-content">
+              <!-- Graph Section -->
+              <div class="graph-section">
+                <div class="section-title">
+                  <h4>THROUGHPUT (24H)</h4>
+                  <div class="chart-legend">
+                    <div class="legend-item">
+                      <div class="legend-dot legend-read"></div>
+                      <span>Read</span>
+                    </div>
+                    <div class="legend-item">
+                      <div class="legend-dot legend-write"></div>
+                      <span>Write</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="chart-container-modern">
+                  <canvas id="tablespaceChart"></canvas>
+                </div>
+              </div>
+
+              <!-- Table Section -->
+              <div class="table-section">
+                <div class="section-title">
+                  <h4>TOP QUERIES</h4>
+                  <a href="#" class="view-all-link">View All</a>
+                </div>
+                <app-data-table title="" [headers]="tablespacesData.headers" [rows]="tablespacesData.rows"
+                  [loading]="loadingStates.tablespaces" [error]="errorStates.tablespaces"
+                  [totalCount]="tablespacesData.total_count" [currentPage]="tablespacesData.page"
+                  [pageSize]="tablespacesData.page_size" [sortable]="true"
+                  [columnTypes]="['text','number','number','percentage','text']" (refresh)="refreshTablespaces()"
+                  (pageChange)="onTablespacesPageChange($event)">
+                </app-data-table>
+              </div>
             </div>
           </div>
-
-          <!-- Detailed Tablespace Information now in second column -->
-          <div class="dashboard-card">
-            <app-data-table title="Detailed Tablespace Information" [headers]="tablespacesData.headers"
-              [rows]="tablespacesData.rows" [loading]="loadingStates.tablespaces" [error]="errorStates.tablespaces"
-              [totalCount]="tablespacesData.total_count" [currentPage]="tablespacesData.page"
-              [pageSize]="tablespacesData.page_size" [sortable]="true"
-              [columnTypes]="['text','number','number','number','percentage']" (refresh)="refreshTablespaces()"
-              (pageChange)="onTablespacesPageChange($event)">
-            </app-data-table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Real-time Stats Grid -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-info">
-            <h3>Active Connections</h3>
-            <p class="stat-number">{{ dbMetrics?.active_connections || 0 }}</p>
-            <p class="stat-change">+5% from last hour</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-info">
-            <h3>Database Size</h3>
-            <p class="stat-number">{{ (dbMetrics?.database_size_gb || 0) | number:'1.1-1' }} GB</p>
-            <p class="stat-change">+2.3% from last month</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-info">
-            <h3>Uptime</h3>
-            <p class="stat-number">{{ (dbMetrics?.uptime_hours || 0) | number:'1.0-0' }}h</p>
-            <p class="stat-change">99.9% availability</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-info">
-            <h3>Performance</h3>
-            <p class="stat-number">98.5%</p>
-            <p class="stat-change">Excellent</p>
-          </div>
-        </div>
+        </ng-container>
       </div>
 
       <!-- Selected Projects Section (only show when not in monitoring) -->
