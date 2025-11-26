@@ -67,47 +67,47 @@ export class DataTableComponent implements OnInit, OnDestroy {
   }
 
   onSort(columnIndex: number): void {
-  // 1) calcula nuevo estado de columna/dirección
-  if (this.sortColumn === columnIndex) {
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    this.sortColumn = columnIndex;
-    this.sortDirection = 'asc';
-  }
-
-  // 2) reordena displayedRows según tipo de columna
-  const type = this.columnTypes[columnIndex] || 'text';
-  this.displayedRows = [...this.rows].sort((a, b) => {
-    let aVal = a[columnIndex];
-    let bVal = b[columnIndex];
-
-    // convierte según tipo
-    if (type === 'number') {
-      aVal = Number(aVal);
-      bVal = Number(bVal);
-    } else if (type === 'percentage') {
-      aVal = parseFloat(String(aVal).replace('%', ''));
-      bVal = parseFloat(String(bVal).replace('%', ''));
-    } else if (type === 'date') {
-      aVal = new Date(String(aVal)).getTime();
-      bVal = new Date(String(bVal)).getTime();
+    // 1) calcula nuevo estado de columna/dirección
+    if (this.sortColumn === columnIndex) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
-      aVal = String(aVal).toLowerCase();
-      bVal = String(bVal).toLowerCase();
+      this.sortColumn = columnIndex;
+      this.sortDirection = 'asc';
     }
 
-    // compara numérico o lex
-    let cmp = 0;
-    if (aVal == null)        cmp = -1;
-    else if (bVal == null)   cmp =  1;
-    else if (aVal < bVal)    cmp = -1;
-    else if (aVal > bVal)    cmp =  1;
-    return this.sortDirection === 'asc' ? cmp : -cmp;
-  });
+    // 2) reordena displayedRows según tipo de columna
+    const type = this.columnTypes[columnIndex] || 'text';
+    this.displayedRows = [...this.rows].sort((a, b) => {
+      let aVal = a[columnIndex];
+      let bVal = b[columnIndex];
 
-  // 3) emite evento al padre si es necesario
-  this.sort.emit({ column: columnIndex, direction: this.sortDirection });
-}
+      // convierte según tipo
+      if (type === 'number') {
+        aVal = Number(aVal);
+        bVal = Number(bVal);
+      } else if (type === 'percentage') {
+        aVal = parseFloat(String(aVal).replace('%', ''));
+        bVal = parseFloat(String(bVal).replace('%', ''));
+      } else if (type === 'date') {
+        aVal = new Date(String(aVal)).getTime();
+        bVal = new Date(String(bVal)).getTime();
+      } else {
+        aVal = String(aVal).toLowerCase();
+        bVal = String(bVal).toLowerCase();
+      }
+
+      // compara numérico o lex
+      let cmp = 0;
+      if (aVal == null) cmp = -1;
+      else if (bVal == null) cmp = 1;
+      else if (aVal < bVal) cmp = -1;
+      else if (aVal > bVal) cmp = 1;
+      return this.sortDirection === 'asc' ? cmp : -cmp;
+    });
+
+    // 3) emite evento al padre si es necesario
+    this.sort.emit({ column: columnIndex, direction: this.sortDirection });
+  }
 
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
@@ -137,6 +137,23 @@ export class DataTableComponent implements OnInit, OnDestroy {
       default:
         return value.toString();
     }
+  }
+
+  getPercentageClass(value: any): string {
+    const numStr = String(value).replace('%', '');
+    const num = parseFloat(numStr);
+
+    if (isNaN(num)) return '';
+
+    // 85% and above = red (critical)
+    // Everything else = green (healthy)
+    if (num >= 85) return 'percentage-critical';
+    return 'percentage-healthy';
+  }
+
+  isPercentage(value: any, columnIndex: number): boolean {
+    const type = this.columnTypes[columnIndex] || 'text';
+    return type === 'percentage';
   }
 
   get totalPages(): number {
