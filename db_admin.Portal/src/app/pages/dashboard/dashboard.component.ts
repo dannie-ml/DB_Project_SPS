@@ -12,6 +12,21 @@ import { Subject, takeUntil, interval } from 'rxjs';
 // Chart.js types
 declare const Chart: any;
 
+// Database Block Interface
+interface DatabaseBlock {
+  id: string;
+  name: string;
+  status: 'healthy' | 'warning' | 'critical';
+  version: string;
+  region: string;
+  metrics: {
+    cpu: number;
+    memory: number;
+    connections: number;
+    latency: number;
+  };
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -23,6 +38,50 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   currentUser: User | null = null;
   activeSection: string = 'home';
   activeMonitoringTab: string = 'tablespaces'; // Changed default to tablespaces
+  sidebarCollapsed: boolean = false; // Sidebar collapse state
+
+  // Database blocks for scalable display
+  databases: DatabaseBlock[] = [
+    {
+      id: 'db1',
+      name: 'ORCL_DB_CLUSTER_001',
+      status: 'healthy',
+      version: 'Oracle 19c',
+      region: 'US-East-1',
+      metrics: {
+        cpu: 45,
+        memory: 32,
+        connections: 245,
+        latency: 12
+      }
+    },
+    {
+      id: 'db2',
+      name: 'ORCL_DB_CLUSTER_002',
+      status: 'warning',
+      version: 'Oracle 19c',
+      region: 'EU-West-2',
+      metrics: {
+        cpu: 78,
+        memory: 58,
+        connections: 412,
+        latency: 28
+      }
+    },
+    {
+      id: 'db3',
+      name: 'ORCL_DB_CLUSTER_003',
+      status: 'healthy',
+      version: 'Oracle 21c',
+      region: 'US-West-1',
+      metrics: {
+        cpu: 32,
+        memory: 24,
+        connections: 156,
+        latency: 8
+      }
+    }
+  ];
 
   // Database metrics
   dbMetrics: DatabaseMetrics | null = null;
@@ -69,7 +128,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     private authService: AuthService,
     private monitoringService: MonitoringService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Subscribe to current user
@@ -155,36 +214,31 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   private initializeTablespaceChart(): void {
     const canvas = document.getElementById('tablespaceChart') as HTMLCanvasElement;
     if (!canvas) {
-        console.warn('Canvas element "tablespaceChart" not found.');
-        return;
+      console.warn('Canvas element "tablespaceChart" not found.');
+      return;
     }
 
     const ctx = canvas.getContext('2d');
     if (!ctx) {
-        console.warn('2D context not available for canvas.');
-        return;
+      console.warn('2D context not available for canvas.');
+      return;
     }
 
     // Destroy existing chart if it exists
     if (this.tablespaceChart) {
       this.tablespaceChart.destroy();
-      this.tablespaceChart = null;
     }
 
     const chartData = this.getTablespaceChartData();
 
-    // Define a more modern color palette
-    const modernColors = [
-      'rgba(75, 192, 192, 0.8)', // Teal
-      'rgba(153, 102, 255, 0.8)', // Purple
-      'rgba(255, 159, 64, 0.8)', // Orange
-      'rgba(255, 99, 132, 0.8)', // Red-pink
-      'rgba(54, 162, 235, 0.8)', // Blue
-      'rgba(201, 203, 207, 0.8)', // Grey
-      'rgba(255, 205, 86, 0.8)', // Yellow
-      'rgba(70, 130, 180, 0.8)', // SteelBlue
-      'rgba(144, 238, 144, 0.8)', // LightGreen
-      'rgba(218, 112, 214, 0.8)'  // Orchid
+    // Modern colorful palette
+    const colors = [
+      '#6366f1', // Indigo
+      '#8b5cf6', // Violet
+      '#ec4899', // Pink
+      '#f59e0b', // Amber
+      '#10b981', // Emerald
+      '#3b82f6'  // Blue
     ];
 
     this.tablespaceChart = new Chart(ctx, {
@@ -192,56 +246,38 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       data: {
         labels: chartData.labels,
         datasets: [{
-          label: 'Espacio Usado (GB)',
+          label: 'Used Space (GB)',
           data: chartData.data,
-          // Use a function to apply colors dynamically for each bar
-          backgroundColor: modernColors, // Assign the palette
-          // You could also use gradients here for a more advanced look:
-          // backgroundColor: chartData.labels.map((label: string, index: number) => {
-          //   const gradient = ctx.createLinearGradient(0, 0, 0, 400); // Adjust coordinates as needed
-          //   gradient.addColorStop(0, modernColors[index % modernColors.length].replace('0.8', '1')); // Opaque top
-          //   gradient.addColorStop(1, modernColors[index % modernColors.length].replace('0.8', '0.4')); // Transparent bottom
-          //   return gradient;
-          // }),
-          borderColor: 'rgba(255, 255, 255, 0.1)', // Very subtle bar border
-          borderWidth: 1,
-          borderRadius: 5, // ADDED: Rounded corners for bars
-          borderSkipped: false, // Prevents bottom border from being skipped for rounded corners
+          backgroundColor: colors.slice(0, chartData.data.length),
+          borderRadius: 6,
+          barThickness: 40,
+          borderSkipped: false
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        layout: {
-          padding: {
-            top: 20,
-            bottom: 20,
-            left: 20,
-            right: 30 // Give a bit more space on the right if needed
-          }
-        },
         plugins: {
           legend: {
-            display: false, // REMOVED: Legend entirely as per your preference
-            // Keep the previous filter and onClick if you want to selectively enable/disable
-            // onClick: (e: any, legendItem: any, legend: any) => { /* do nothing */ },
-            // labels: { filter: (legendItem: any) => legendItem.text !== undefined && legendItem.text !== '' }
+            display: false
           },
           tooltip: {
-            backgroundColor: 'rgba(30, 30, 30, 0.9)', // Darker, slightly transparent tooltip background
-            titleColor: '#fff',
-            bodyColor: '#fff',
-            borderColor: 'rgba(255, 255, 255, 0.2)', // Softer tooltip border
-            borderWidth: 1,
-            cornerRadius: 6, // Rounded tooltip corners
-            displayColors: false, // Hide color box in tooltip
+            backgroundColor: '#1e293b',
+            padding: 16,
+            cornerRadius: 12,
+            titleFont: {
+              size: 14,
+              family: 'Inter, sans-serif',
+              weight: '600'
+            },
+            bodyFont: {
+              size: 13,
+              family: 'SF Mono, Monaco, Consolas, monospace'
+            },
+            displayColors: false,
             callbacks: {
-              title: function(context: any) {
-                return context[0].label; // Show tablespace name as title
-              },
-              label: function(context: any) {
-                const value = context.parsed.y || 0;
-                return `Usage: ${value.toFixed(1)} MB`; // More descriptive label
+              label: function (context: any) {
+                return context.parsed.y + ' GB';
               }
             }
           }
@@ -249,48 +285,42 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         scales: {
           x: {
             grid: {
-              display: false, // No vertical grid lines
-              drawBorder: false, // No border on the grid
+              display: false
             },
             ticks: {
-              color: '#888', // Softer color for x-axis labels
               font: {
-                size: 8, // Slightly smaller font for x-axis labels
+                size: 12,
+                family: 'Inter, sans-serif'
               },
-              maxRotation: 45,
-              minRotation: 45,
-              padding: 10, // Padding between labels and bars
+              color: '#94a3b8'
             },
-            offset: true, // Centers bars between grid lines
+            border: {
+              display: false
+            }
           },
           y: {
-            beginAtZero: true,
             grid: {
-              color: 'rgba(255, 255, 255, 0.05)', // Very faint horizontal grid lines
-              drawBorder: false, // No border on the grid
+              color: '#f1f5f9',
+              borderDash: [4, 4]
+            },
+            border: {
+              display: false
             },
             ticks: {
-              color: '#888', // Softer color for y-axis labels
               font: {
                 size: 11,
+                family: 'Inter, sans-serif'
               },
-              callback: function(value: any) {
-                return value + ' MB';
-              },
-              // Ensure consistent spacing if values are large
-              maxTicksLimit: 10,
-            },
-            border: { // ADDED: Soft border for the y-axis itself
-                display: true,
-                color: 'rgba(255, 255, 255, 0.1)',
-                width: 1
+              color: '#cbd5e1',
+              callback: function (value: any) {
+                return value + ' GB';
+              }
             }
           }
         },
-        // ADDED: Animation for smoother transitions
         animation: {
-          duration: 1000, // Duration in milliseconds
-          easing: 'easeInOutQuad' // Easing function
+          duration: 1000,
+          easing: 'easeOutQuart'
         }
       }
     });
@@ -454,6 +484,24 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   logout(): void {
     this.authService.logout();
+  }
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed = !this.sidebarCollapsed;
+  }
+
+  getUserInitials(): string {
+    if (!this.currentUser) return '';
+    return this.currentUser.full_name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase();
+  }
+
+  trackByDatabaseId(index: number, db: DatabaseBlock): string {
+    return db.id;
   }
 
   setActiveSection(section: string, event: Event): void {
