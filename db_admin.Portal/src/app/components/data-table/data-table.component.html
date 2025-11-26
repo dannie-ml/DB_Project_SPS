@@ -40,7 +40,12 @@
       <tbody>
         <tr *ngFor="let row of displayedRows; let i = index" [class.even]="i % 2 === 0" [class.odd]="i % 2 === 1">
           <td *ngFor="let cell of row; let j = index" [class]="getCellClass(j)">
-            {{ formatCell(cell, j) }}
+            <span *ngIf="isPercentage(cell, j)" [class]="getPercentageClass(cell)" class="percentage-badge">
+              {{ formatCell(cell, j) }}
+            </span>
+            <span *ngIf="!isPercentage(cell, j)">
+              {{ formatCell(cell, j) }}
+            </span>
           </td>
         </tr>
       </tbody>
